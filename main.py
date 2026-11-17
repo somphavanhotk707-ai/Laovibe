@@ -28,7 +28,7 @@ DEFAULT_LAOS_SOURCES = [
     "https://856.today/",
 ]
 
-app = FastAPI(title="LaoVibe — Laos Event Scraper & Personality Matcher")
+app = FastAPI(title="LaoVibe by Somphavanh — Laos Event Scraper & Personality Matcher")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
@@ -72,6 +72,7 @@ class RecommendRequest(BaseModel):
     query: str
     personality: PersonalityProfile
     use_live_search: bool = False
+    language: str = "en"  # "en" or "lo"
 
 
 class RecommendationItem(BaseModel):
@@ -311,8 +312,18 @@ async def recommend_events(req: RecommendRequest):
     today_str = datetime.now().strftime("%B %d, %Y")
     p = req.personality
 
+    if req.language == "lo":
+        lang_instruction = (
+            "IMPORTANT LANGUAGE RULE: Write 'assistant_message', 'why_it_matches', and 'suggested_followups' "
+            "in natural, warm, polite Lao language (ພາສາລາວ). Keep event_title recognizable (you can keep the English name or add Lao)."
+        )
+    else:
+        lang_instruction = "Write 'assistant_message', 'why_it_matches', and 'suggested_followups' in natural, warm English."
+
     prompt = f"""
-You are LaoVibe, a warm Laos event concierge. Today is {today_str}.
+You are LaoVibe, a warm Laos event concierge created by Somphavanh. Today is {today_str}.
+{lang_instruction}
+
 USER PERSONALITY:
 - Social Energy: {p.social_energy}
 - Pace: {p.pace}
