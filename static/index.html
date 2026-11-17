@@ -3,11 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LaoVibe — AI Laos Event Scraper & Personality Matcher</title>
+  <title>LaoVibe by Somphavanh — AI Laos Event Scraper & Personality Matcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    body { background-color: #faf7f2; }
+    body {
+      background-color: #faf7f2;
+      font-family: ui-sans-serif, system-ui, "Noto Sans Lao", sans-serif;
+    }
     .chip-active { background-color: #0f766e; color: white; border-color: #0f766e; }
   </style>
 </head>
@@ -21,25 +27,36 @@
           <i data-lucide="sparkles" class="w-5 h-5"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg leading-tight text-stone-900">LaoVibe AI</h1>
-          <p class="text-xs text-stone-500">Laos Event Scraper & Personality Concierge</p>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-lg leading-tight text-stone-900">LaoVibe AI</h1>
+            <span class="text-[11px] font-semibold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-200" data-i18n="byBadge">
+              by Somphavanh
+            </span>
+          </div>
+          <p class="text-xs text-stone-500" data-i18n="subtitle">Laos Event Scraper & Personality Concierge</p>
         </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2.5">
+        <!-- Language Toggle -->
+        <div class="flex bg-stone-100 p-0.5 rounded-xl border border-stone-200">
+          <button id="langBtnEn" onclick="setLanguage('en')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-teal-800 shadow-sm">EN</button>
+          <button id="langBtnLo" onclick="setLanguage('lo')" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-stone-600 hover:text-stone-900">ລາວ</button>
+        </div>
+
         <span id="cacheStatus" class="text-xs bg-stone-100 text-stone-600 px-3 py-1.5 rounded-full border border-stone-200">
           Loading events...
         </span>
 
         <label class="flex items-center gap-1.5 text-xs text-stone-600 cursor-pointer select-none">
           <input id="includeSearchToggle" type="checkbox" class="rounded text-teal-700 focus:ring-teal-600" />
-          Use Gemini Live Search
+          <span data-i18n="liveSearchScrape">Use Gemini Live Search</span>
         </label>
 
         <button id="scrapeBtn" onclick="scrapeEvents()"
           class="bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
           <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-          <span>Scrape Laos Events</span>
+          <span data-i18n="scrapeBtn">Scrape Laos Events</span>
         </button>
       </div>
     </div>
@@ -59,79 +76,80 @@
         <div class="flex items-center justify-between">
           <h2 class="font-bold text-base flex items-center gap-2 text-stone-900">
             <i data-lucide="user-check" class="w-4 h-4 text-teal-700"></i>
-            Your Personality Profile
+            <span data-i18n="profileTitle">Your Personality Profile</span>
           </h2>
-          <span class="text-[11px] text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full font-medium">Auto-saved</span>
+          <span class="text-[11px] text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full font-medium" data-i18n="autoSaved">Auto-saved</span>
         </div>
 
         <!-- Social Energy -->
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Social Energy</label>
-          <div class="grid grid-cols-3 gap-2" id="energyGroup">
-            <button type="button" onclick="selectSingle('energy', 'Introvert', this)" class="energy-btn border border-stone-200 rounded-xl py-2 text-xs font-medium hover:bg-stone-50">Introvert</button>
-            <button type="button" onclick="selectSingle('energy', 'Ambivert', this)" class="energy-btn chip-active border border-stone-200 rounded-xl py-2 text-xs font-medium">Ambivert</button>
-            <button type="button" onclick="selectSingle('energy', 'Extrovert', this)" class="energy-btn border border-stone-200 rounded-xl py-2 text-xs font-medium hover:bg-stone-50">Extrovert</button>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2" data-i18n="socialEnergyLabel">Social Energy</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="selectSingle('energy', 'Introvert', this)" class="energy-btn border border-stone-200 rounded-xl py-2 px-1 text-xs font-medium hover:bg-stone-50" data-i18n="introvert">Introvert</button>
+            <button type="button" onclick="selectSingle('energy', 'Ambivert', this)" class="energy-btn chip-active border border-stone-200 rounded-xl py-2 px-1 text-xs font-medium" data-i18n="ambivert">Ambivert</button>
+            <button type="button" onclick="selectSingle('energy', 'Extrovert', this)" class="energy-btn border border-stone-200 rounded-xl py-2 px-1 text-xs font-medium hover:bg-stone-50" data-i18n="extrovert">Extrovert</button>
           </div>
         </div>
 
         <!-- Pace -->
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Ideal Event Pace</label>
-          <div class="grid grid-cols-3 gap-2" id="paceGroup">
-            <button type="button" onclick="selectSingle('pace', 'Slow & Mindful', this)" class="pace-btn border border-stone-200 rounded-xl py-2 text-xs font-medium hover:bg-stone-50">Slow & Mindful</button>
-            <button type="button" onclick="selectSingle('pace', 'Balanced', this)" class="pace-btn chip-active border border-stone-200 rounded-xl py-2 text-xs font-medium">Balanced</button>
-            <button type="button" onclick="selectSingle('pace', 'High Energy', this)" class="pace-btn border border-stone-200 rounded-xl py-2 text-xs font-medium hover:bg-stone-50">High Energy</button>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2" data-i18n="paceLabel">Ideal Event Pace</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="selectSingle('pace', 'Slow & Mindful', this)" class="pace-btn border border-stone-200 rounded-xl py-2 px-1 text-xs font-medium hover:bg-stone-50" data-i18n="paceSlow">Slow & Mindful</button>
+            <button type="button" onclick="selectSingle('pace', 'Balanced', this)" class="pace-btn chip-active border border-stone-200 rounded-xl py-2 px-1 text-xs font-medium" data-i18n="paceBalanced">Balanced</button>
+            <button type="button" onclick="selectSingle('pace', 'High Energy', this)" class="pace-btn border border-stone-200 rounded-xl py-2 px-1 text-xs font-medium hover:bg-stone-50" data-i18n="paceHigh">High Energy</button>
           </div>
         </div>
 
         <!-- City & Budget -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">City in Laos</label>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5" data-i18n="cityLabel">City in Laos</label>
             <select id="citySelect" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-teal-600">
-              <option>Anywhere in Laos</option>
-              <option>Vientiane</option>
-              <option>Luang Prabang</option>
-              <option>Vang Vieng</option>
-              <option>Pakse</option>
+              <option value="Anywhere in Laos" data-i18n="cityAny">Anywhere in Laos</option>
+              <option value="Vientiane" data-i18n="cityVte">Vientiane</option>
+              <option value="Luang Prabang" data-i18n="cityLpb">Luang Prabang</option>
+              <option value="Vang Vieng" data-i18n="cityVv">Vang Vieng</option>
+              <option value="Pakse" data-i18n="cityPakse">Pakse</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Budget</label>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5" data-i18n="budgetLabel">Budget</label>
             <select id="budgetSelect" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-teal-600">
-              <option>Any</option>
-              <option>Free / Budget</option>
-              <option>Moderate</option>
+              <option value="Any" data-i18n="budgetAny">Any</option>
+              <option value="Free / Budget" data-i18n="budgetFree">Free / Budget</option>
+              <option value="Moderate" data-i18n="budgetMod">Moderate</option>
             </select>
           </div>
         </div>
 
         <!-- Interests -->
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Interests & Vibes</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2" data-i18n="interestsLabel">Interests & Vibes</label>
           <div class="flex flex-wrap gap-1.5" id="interestChips">
-            <button type="button" onclick="toggleInterest(this)" class="interest-btn chip-active border border-stone-200 rounded-full px-3 py-1 text-xs">Arts & Culture</button>
-            <button type="button" onclick="toggleInterest(this)" class="interest-btn chip-active border border-stone-200 rounded-full px-3 py-1 text-xs">Food & Coffee</button>
-            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Live Music</button>
-            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Markets & Crafts</button>
-            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Nature & Wellness</button>
-            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Tech & Networking</button>
-            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Festivals & Temples</button>
-            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Nightlife & Social</button>
+            <button type="button" data-key="Arts & Culture" onclick="toggleInterest(this)" class="interest-btn chip-active border border-stone-200 rounded-full px-3 py-1 text-xs" data-i18n="intArts">Arts & Culture</button>
+            <button type="button" data-key="Food & Coffee" onclick="toggleInterest(this)" class="interest-btn chip-active border border-stone-200 rounded-full px-3 py-1 text-xs" data-i18n="intFood">Food & Coffee</button>
+            <button type="button" data-key="Live Music" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs" data-i18n="intMusic">Live Music</button>
+            <button type="button" data-key="Markets & Crafts" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs" data-i18n="intMarkets">Markets & Crafts</button>
+            <button type="button" data-key="Nature & Wellness" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs" data-i18n="intNature">Nature & Wellness</button>
+            <button type="button" data-key="Tech & Networking" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs" data-i18n="intTech">Tech & Networking</button>
+            <button type="button" data-key="Festivals & Temples" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs" data-i18n="intFest">Festivals & Temples</button>
+            <button type="button" data-key="Nightlife & Social" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs" data-i18n="intNight">Nightlife & Social</button>
           </div>
         </div>
 
         <!-- Bio -->
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">About You / Current Mood</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5" data-i18n="bioLabel">About You / Current Mood</label>
           <textarea id="bioInput" rows="3"
+            data-i18n-placeholder="bioPlaceholder"
             placeholder="e.g., I'm a solo traveler who loves quiet heritage spaces, acoustic music, and local markets—not loud clubs."
             class="w-full border border-stone-200 rounded-xl p-3 text-sm focus:outline-teal-600"></textarea>
         </div>
 
         <!-- Custom Scrape URL -->
         <div class="pt-3 border-t border-stone-100">
-          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Add Custom Laos Event URL (Optional)</label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5" data-i18n="customUrlLabel">Add Custom Laos Event URL (Optional)</label>
           <input id="customUrlInput" type="url" placeholder="https://example.com/laos-events"
             class="w-full border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-teal-600" />
         </div>
@@ -144,32 +162,32 @@
       <!-- Tabs -->
       <div class="flex gap-2 bg-white p-1.5 rounded-2xl border border-stone-200 w-fit">
         <button id="tabConcierge" onclick="switchTab('concierge')"
-          class="px-4 py-2 rounded-xl text-sm font-semibold bg-teal-700 text-white transition">
+          class="px-4 py-2 rounded-xl text-sm font-semibold bg-teal-700 text-white transition" data-i18n="tabMatcher">
           AI Personality Matcher
         </button>
         <button id="tabExplore" onclick="switchTab('explore')"
           class="px-4 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-100 transition">
-          All Scraped Events (<span id="eventCountTab">0</span>)
+          <span data-i18n="tabExplore">All Scraped Events</span> (<span id="eventCountTab">0</span>)
         </button>
       </div>
 
       <!-- TAB 1: AI Concierge -->
       <div id="panelConcierge" class="space-y-5">
         <div class="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm space-y-4">
-          <h2 class="font-bold text-base text-stone-900">Ask about events in Laos</h2>
+          <h2 class="font-bold text-base text-stone-900" data-i18n="askTitle">Ask about events in Laos</h2>
 
           <!-- Quick Prompts -->
           <div class="flex flex-wrap gap-2">
-            <button onclick="askPreset('What events this week match my personality best?')"
-              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition">
+            <button onclick="askPresetKey('prompt1')"
+              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition" data-i18n="prompt1">
               What fits my vibe this week?
             </button>
-            <button onclick="askPreset('Any calm cultural or creative workshops in Laos?')"
-              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition">
+            <button onclick="askPresetKey('prompt2')"
+              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition" data-i18n="prompt2">
               Calm cultural & creative events
             </button>
-            <button onclick="askPreset('Where can I meet friendly people or enjoy live music?')"
-              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition">
+            <button onclick="askPresetKey('prompt3')"
+              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition" data-i18n="prompt3">
               Social & live music spots
             </button>
           </div>
@@ -177,18 +195,19 @@
           <!-- Input Form -->
           <form onsubmit="handleAsk(event)" class="flex flex-col sm:flex-row gap-2.5">
             <input id="queryInput" type="text" required
+              data-i18n-placeholder="queryPlaceholder"
               placeholder="Ask anything... e.g. 'Any weekend art, food, or music events in Vientiane?'"
               class="flex-1 border border-stone-300 rounded-xl px-4 py-2.5 text-sm focus:outline-teal-600" />
             <button id="askBtn" type="submit"
               class="bg-stone-900 hover:bg-stone-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition">
               <i data-lucide="send" class="w-4 h-4"></i>
-              <span>Match Me</span>
+              <span data-i18n="matchBtn">Match Me</span>
             </button>
           </form>
 
           <label class="flex items-center gap-2 text-xs text-stone-500 cursor-pointer">
             <input id="liveQuerySearch" type="checkbox" class="rounded text-teal-700" />
-            Also run a fresh Gemini Google Search for this specific question
+            <span data-i18n="liveQueryLabel">Also run a fresh Gemini Google Search for this specific question</span>
           </label>
         </div>
 
@@ -199,14 +218,16 @@
       <!-- TAB 2: Scraped Event Explorer -->
       <div id="panelExplore" class="hidden space-y-4">
         <div class="bg-white rounded-2xl border border-stone-200 p-4 flex flex-wrap gap-3 items-center justify-between">
-          <input id="exploreFilterInput" oninput="renderAllEvents()" type="text" placeholder="Filter by title, city, or vibe..."
+          <input id="exploreFilterInput" oninput="renderAllEvents()" type="text"
+            data-i18n-placeholder="filterPlaceholder"
+            placeholder="Filter by title, city, or vibe..."
             class="border border-stone-200 rounded-xl px-3.5 py-2 text-sm flex-1 min-w-[200px] focus:outline-teal-600" />
           <select id="exploreCityFilter" onchange="renderAllEvents()" class="border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white">
-            <option value="">All Cities</option>
-            <option value="Vientiane">Vientiane</option>
-            <option value="Luang Prabang">Luang Prabang</option>
-            <option value="Vang Vieng">Vang Vieng</option>
-            <option value="Pakse">Pakse</option>
+            <option value="" data-i18n="filterAllCities">All Cities</option>
+            <option value="Vientiane" data-i18n="cityVte">Vientiane</option>
+            <option value="Luang Prabang" data-i18n="cityLpb">Luang Prabang</option>
+            <option value="Vang Vieng" data-i18n="cityVv">Vang Vieng</option>
+            <option value="Pakse" data-i18n="cityPakse">Pakse</option>
           </select>
         </div>
         <div id="allEventsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -215,13 +236,180 @@
     </section>
   </main>
 
+  <!-- Footer Credential -->
+  <footer class="bg-white border-t border-stone-200 py-4 px-4 mt-8">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500">
+      <span data-i18n="footerCredit">LaoVibe AI • Created &amp; Curated by <strong class="text-stone-800">Somphavanh</strong></span>
+      <span>Powered by Gemini &amp; FastAPI</span>
+    </div>
+  </footer>
+
   <script>
+    const I18N = {
+      en: {
+        byBadge: "by Somphavanh",
+        subtitle: "Laos Event Scraper & Personality Concierge",
+        liveSearchScrape: "Use Gemini Live Search",
+        scrapeBtn: "Scrape Laos Events",
+        scrapingBtn: "Scraping events...",
+        profileTitle: "Your Personality Profile",
+        autoSaved: "Auto-saved",
+        socialEnergyLabel: "Social Energy",
+        introvert: "Introvert",
+        ambivert: "Ambivert",
+        extrovert: "Extrovert",
+        paceLabel: "Ideal Event Pace",
+        paceSlow: "Slow & Mindful",
+        paceBalanced: "Balanced",
+        paceHigh: "High Energy",
+        cityLabel: "City in Laos",
+        cityAny: "Anywhere in Laos",
+        cityVte: "Vientiane",
+        cityLpb: "Luang Prabang",
+        cityVv: "Vang Vieng",
+        cityPakse: "Pakse",
+        budgetLabel: "Budget",
+        budgetAny: "Any",
+        budgetFree: "Free / Budget",
+        budgetMod: "Moderate",
+        interestsLabel: "Interests & Vibes",
+        intArts: "Arts & Culture",
+        intFood: "Food & Coffee",
+        intMusic: "Live Music",
+        intMarkets: "Markets & Crafts",
+        intNature: "Nature & Wellness",
+        intTech: "Tech & Networking",
+        intFest: "Festivals & Temples",
+        intNight: "Nightlife & Social",
+        bioLabel: "About You / Current Mood",
+        bioPlaceholder: "e.g., I'm a solo traveler who loves quiet heritage spaces, acoustic music, and local markets—not loud clubs.",
+        customUrlLabel: "Add Custom Laos Event URL (Optional)",
+        tabMatcher: "AI Personality Matcher",
+        tabExplore: "All Scraped Events",
+        askTitle: "Ask about events in Laos",
+        prompt1: "What events this week match my personality best?",
+        prompt2: "Any calm cultural or creative workshops in Laos?",
+        prompt3: "Where can I meet friendly people or enjoy live music?",
+        queryPlaceholder: "Ask anything... e.g. 'Any weekend art, food, or music events in Vientiane?'",
+        matchBtn: "Match Me",
+        liveQueryLabel: "Also run a fresh Gemini Google Search for this specific question",
+        filterPlaceholder: "Filter by title, city, or vibe...",
+        filterAllCities: "All Cities",
+        footerCredit: "LaoVibe AI • Created & Curated by Somphavanh",
+        emptyCache: "0 events cached — click Scrape!",
+        loadingRecommend: "AI is analyzing your personality and matching Laos events...",
+        matchSuffix: "% Personality Match",
+        whyFits: "Why it fits you:",
+        whenLabel: "When:",
+        whereLabel: "Where:",
+        priceLabel: "Price:",
+        bestForLabel: "Best for:",
+        viewSource: "View Source ↗",
+        noEventsFilter: "No events match your filter. Try clicking \"Scrape Laos Events\" at the top.",
+        scrapeSuccess: "Scraped and structured {n} Laos events! Ask the AI Concierge for your best matches."
+      },
+      lo: {
+        byBadge: "ໂດຍ Somphavanh",
+        subtitle: "ຄົ້ນຫາກິດຈະກຳໃນລາວ & ແນະນຳຕາມບຸກຄະລິກກະພາບ",
+        liveSearchScrape: "ໃຊ້ Gemini ຄົ້ນຫາສົດ",
+        scrapeBtn: "ດຶງຂໍ້ມູນກິດຈະກຳລາວ",
+        scrapingBtn: "ກຳລັງດຶງຂໍ້ມູນ...",
+        profileTitle: "ຂໍ້ມູນບຸກຄະລິກກະພາບຂອງທ່ານ",
+        autoSaved: "ບັນທຶກອັດຕະໂນມັດ",
+        socialEnergyLabel: "ພະລັງທາງສັງຄົມ",
+        introvert: "ມັກຄວາມສະຫງົບ",
+        ambivert: "ກາງໆ / ປັບຕົວໄດ້",
+        extrovert: "ມັກເຂົ້າສັງຄົມ",
+        paceLabel: "ຈັງຫວະຂອງງານທີ່ມັກ",
+        paceSlow: "ຊ້າໆ ສະບາຍໆ",
+        paceBalanced: "ພໍດີ ປານກາງ",
+        paceHigh: "ຄຶກຄື້ນ ມ່ວນຊື່ນ",
+        cityLabel: "ເມືອງໃນລາວ",
+        cityAny: "ທຸກແຫ່ງໃນລາວ",
+        cityVte: "ນະຄອນຫຼວງວຽງຈັນ",
+        cityLpb: "ຫຼວງພະບາງ",
+        cityVv: "ວັງວຽງ",
+        cityPakse: "ປາກເຊ",
+        budgetLabel: "ງົບປະມານ",
+        budgetAny: "ທຸກລະດັບ",
+        budgetFree: "ຟຣີ / ປະຢັດ",
+        budgetMod: "ປານກາງ",
+        interestsLabel: "ຄວາມສົນໃຈ & ບັນຍາກາດ",
+        intArts: "ສິລະປະ & ວັດທະນະທຳ",
+        intFood: "ອາຫານ & ກາເຟ",
+        intMusic: "ດົນຕີສົດ",
+        intMarkets: "ຕະຫຼາດນັດ & ຫັດຖະກຳ",
+        intNature: "ທຳມະຊາດ & ສຸຂະພາບ",
+        intTech: "ເທັກໂນໂລຢີ & ເຄືອຂ່າຍ",
+        intFest: "ບຸນປະເພນີ & ວັດວາ",
+        intNight: "ສັງສັນຍາມຄ່ຳ",
+        bioLabel: "ກ່ຽວກັບທ່ານ / ອາລົມຕອນນີ້",
+        bioPlaceholder: "ເຊັ່ນ: ຂ້ອຍມັກທ່ຽວຄົນດຽວ, ມັກຮ້ານກາເຟງຽບໆ, ດົນຕີອະຄູສຕິກ ແລະ ຕະຫຼາດຫັດຖະກຳ...",
+        customUrlLabel: "ເພີ່ມລິ້ງເວັບກິດຈະກຳລາວ (ຖ້າມີ)",
+        tabMatcher: "AI ຈັບຄູ່ກິດຈະກຳ",
+        tabExplore: "ກິດຈະກຳທັງໝົດ",
+        askTitle: "ຖາມກ່ຽວກັບກິດຈະກຳໃນລາວ",
+        prompt1: "ອາທິດນີ້ມີງານຫຍັງທີ່ເໝາະກັບບຸກຄະລິກຂອງຂ້ອຍ?",
+        prompt2: "ມີເວີກຊັອບສິລະປະ ຫຼື ວັດທະນະທຳທີ່ສະຫງົບໆ ໃນລາວບໍ່?",
+        prompt3: "ຢູ່ໃສມີດົນຕີສົດ ຫຼື ບ່ອນພົບປະຜູ້ຄົນທີ່ເປັນມິດ?",
+        queryPlaceholder: "ຖາມໄດ້ເລີຍ... ເຊັ່ນ 'ທ້າຍອາທິດນີ້ຢູ່ວຽງຈັນມີງານສິລະປະ ຫຼື ອາຫານຫຍັງແດ່?'",
+        matchBtn: "ຊອກຫາໃຫ້ຂ້ອຍ",
+        liveQueryLabel: "ຄົ້ນຫາຜ່ານ Google ດ້ວຍ Gemini ສຳລັບຄຳຖາມນີ້",
+        filterPlaceholder: "ຄົ້ນຫາຕາມຊື່, ເມືອງ, ຫຼື ບັນຍາກາດ...",
+        filterAllCities: "ທຸກເມືອງ",
+        footerCredit: "LaoVibe AI • ພັດທະນາ ແລະ ດູແລໂດຍ Somphavanh",
+        emptyCache: "ຍັງບໍ່ມີຂໍ້ມູນ — ກົດ 'ດຶງຂໍ້ມູນກິດຈະກຳລາວ'!",
+        loadingRecommend: "AI ກຳລັງວິເຄາະບຸກຄະລິກກະພາບ ແລະ ຈັບຄູ່ກິດຈະກຳໃນລາວ...",
+        matchSuffix: "% ເໝາະກັບບຸກຄະລິກ",
+        whyFits: "ເຫດຜົນທີ່ເໝາະກັບທ່ານ:",
+        whenLabel: "ເວລາ:",
+        whereLabel: "ສະຖານທີ່:",
+        priceLabel: "ລາຄາ:",
+        bestForLabel: "ເໝາະສຳລັບ:",
+        viewSource: "ເບິ່ງແຫຼ່ງຂໍ້ມູນ ↗",
+        noEventsFilter: "ບໍ່ພົບກິດຈະກຳທີ່ຕົງກັນ. ລອງກົດ 'ດຶງຂໍ້ມູນກິດຈະກຳລາວ' ດ້ານເທິງ.",
+        scrapeSuccess: "ດຶງຂໍ້ມູນກິດຈະກຳໃນລາວສຳເລັດ {n} ລາຍການ! ລອງຖາມ AI ໄດ້ເລີຍ."
+      }
+    };
+
     let state = {
+      lang: "en",
       energy: "Ambivert",
       pace: "Balanced",
       interests: ["Arts & Culture", "Food & Coffee"],
       events: [],
+      updatedAt: null,
+      lastRecData: null,
     };
+
+    function t(key) {
+      return (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key;
+    }
+
+    function setLanguage(lang) {
+      state.lang = lang;
+      document.documentElement.lang = lang === "lo" ? "lo" : "en";
+
+      document.getElementById("langBtnEn").className = lang === "en"
+        ? "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-teal-800 shadow-sm"
+        : "px-2.5 py-1 rounded-lg text-xs font-semibold text-stone-600 hover:text-stone-900";
+      document.getElementById("langBtnLo").className = lang === "lo"
+        ? "px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-teal-800 shadow-sm"
+        : "px-2.5 py-1 rounded-lg text-xs font-semibold text-stone-600 hover:text-stone-900";
+
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (I18N[lang][key]) el.textContent = I18N[lang][key];
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (I18N[lang][key]) el.placeholder = I18N[lang][key];
+      });
+
+      updateCacheStatusText();
+      renderAllEvents();
+      if (state.lastRecData) renderRecommendations(state.lastRecData);
+    }
 
     function showAlert(msg, type = "info") {
       const banner = document.getElementById("alertBanner");
@@ -244,7 +432,7 @@
     }
 
     function toggleInterest(btn) {
-      const val = btn.textContent.trim();
+      const val = btn.getAttribute("data-key");
       btn.classList.toggle("chip-active");
       if (state.interests.includes(val)) {
         state.interests = state.interests.filter(i => i !== val);
@@ -277,6 +465,17 @@
         : "px-4 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-100 transition";
     }
 
+    function updateCacheStatusText() {
+      const statusEl = document.getElementById("cacheStatus");
+      if (state.events.length === 0) {
+        statusEl.textContent = t("emptyCache");
+      } else if (state.lang === "lo") {
+        statusEl.textContent = `${state.events.length} ກິດຈະກຳ • ອັບເດດ ${state.updatedAt || "ຫຼ້າສຸດ"}`;
+      } else {
+        statusEl.textContent = `${state.events.length} events • Updated ${state.updatedAt || "recently"}`;
+      }
+    }
+
     async function loadCachedEvents() {
       try {
         const res = await fetch("/api/events");
@@ -289,22 +488,17 @@
 
     function updateEventUI(data) {
       state.events = data.events || [];
+      state.updatedAt = data.updated_at || null;
       document.getElementById("eventCountTab").textContent = state.events.length;
-      const statusEl = document.getElementById("cacheStatus");
-      if (state.events.length === 0) {
-        statusEl.textContent = "0 events cached — click Scrape!";
-      } else {
-        statusEl.textContent = `${state.events.length} events • Updated ${data.updated_at || "recently"}`;
-      }
+      updateCacheStatusText();
       renderAllEvents();
     }
 
     async function scrapeEvents() {
       hideAlert();
       const btn = document.getElementById("scrapeBtn");
-      const original = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span><span>Scraping events...</span>`;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span><span>${escapeHtml(t("scrapingBtn"))}</span>`;
 
       const customUrl = document.getElementById("customUrlInput").value.trim();
       const useSearch = document.getElementById("includeSearchToggle").checked;
@@ -323,14 +517,18 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Scraping failed");
         updateEventUI(data);
-        showAlert(`Scraped and structured ${data.events.length} Laos events! Ask the AI Concierge for your best matches.`);
+        showAlert(t("scrapeSuccess").replace("{n}", data.events.length));
       } catch (err) {
         showAlert(err.message, "error");
       } finally {
         btn.disabled = false;
-        btn.innerHTML = original;
+        btn.innerHTML = `<i data-lucide="refresh-cw" class="w-4 h-4"></i><span data-i18n="scrapeBtn">${escapeHtml(t("scrapeBtn"))}</span>`;
         lucide.createIcons();
       }
+    }
+
+    function askPresetKey(key) {
+      askPreset(t(key));
     }
 
     function askPreset(text) {
@@ -349,7 +547,7 @@
       btn.disabled = true;
       out.innerHTML = `
         <div class="bg-white rounded-2xl border border-stone-200 p-8 text-center text-stone-500 text-sm">
-          AI is analyzing your personality and matching Laos events...
+          ${escapeHtml(t("loadingRecommend"))}
         </div>`;
 
       try {
@@ -360,11 +558,13 @@
             query,
             personality: getPersonalityPayload(),
             use_live_search: document.getElementById("liveQuerySearch").checked,
+            language: state.lang,
           }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Recommendation failed");
 
+        state.lastRecData = data;
         renderRecommendations(data);
         loadCachedEvents();
       } catch (err) {
@@ -385,25 +585,25 @@
               <h3 class="font-bold text-lg text-stone-900 mt-0.5">${escapeHtml(item.event_title)}</h3>
             </div>
             <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              ${item.match_score}% Personality Match
+              ${item.match_score}${escapeHtml(t("matchSuffix"))}
             </span>
           </div>
 
           <div class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 text-sm text-stone-700">
-            <strong class="text-amber-900">Why it fits you:</strong> ${escapeHtml(item.why_it_matches)}
+            <strong class="text-amber-900">${escapeHtml(t("whyFits"))}</strong> ${escapeHtml(item.why_it_matches)}
           </div>
 
           <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-stone-600">
-            <span><strong>When:</strong> ${escapeHtml(item.date_text)}</span>
-            <span><strong>Where:</strong> ${escapeHtml(item.venue)}</span>
-            <span><strong>Price:</strong> ${escapeHtml(item.price)}</span>
+            <span><strong>${escapeHtml(t("whenLabel"))}</strong> ${escapeHtml(item.date_text)}</span>
+            <span><strong>${escapeHtml(t("whereLabel"))}</strong> ${escapeHtml(item.venue)}</span>
+            <span><strong>${escapeHtml(t("priceLabel"))}</strong> ${escapeHtml(item.price)}</span>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
             <div class="flex flex-wrap gap-1.5">
               ${(item.vibe_tags || []).map(t => `<span class="text-[11px] bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-full">#${escapeHtml(t)}</span>`).join("")}
             </div>
-            ${item.source_url ? `<a href="${escapeHtml(item.source_url)}" target="_blank" rel="noopener" class="text-xs font-semibold text-teal-700 hover:underline">View Source ↗</a>` : ""}
+            ${item.source_url ? `<a href="${escapeHtml(item.source_url)}" target="_blank" rel="noopener" class="text-xs font-semibold text-teal-700 hover:underline">${escapeHtml(t("viewSource"))}</a>` : ""}
           </div>
         </div>
       `).join("");
@@ -415,68 +615,4 @@
       `).join("");
 
       out.innerHTML = `
-        <div class="bg-teal-900 text-white rounded-2xl p-5 shadow-sm">
-          <p class="text-sm leading-relaxed">${escapeHtml(data.assistant_message)}</p>
-        </div>
-        ${cardsHtml}
-        ${followupsHtml ? `<div class="flex flex-wrap gap-2 pt-1">${followupsHtml}</div>` : ""}
-      `;
-    }
-
-    function renderAllEvents() {
-      const grid = document.getElementById("allEventsGrid");
-      const textFilter = (document.getElementById("exploreFilterInput").value || "").toLowerCase();
-      const cityFilter = (document.getElementById("exploreCityFilter").value || "").toLowerCase();
-
-      const filtered = state.events.filter(ev => {
-        const hay = `${ev.title} ${ev.city} ${ev.category} ${ev.description} ${(ev.vibe_tags || []).join(" ")}`.toLowerCase();
-        const matchesText = !textFilter || hay.includes(textFilter);
-        const matchesCity = !cityFilter || (ev.city || "").toLowerCase().includes(cityFilter);
-        return matchesText && matchesCity;
-      });
-
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full bg-white rounded-2xl border border-stone-200 p-8 text-center text-sm text-stone-500">No events match your filter. Try clicking "Scrape Laos Events" at the top.</div>`;
-        return;
-      }
-
-      grid.innerHTML = filtered.map(ev => `
-        <div class="bg-white rounded-2xl border border-stone-200 p-4 shadow-sm flex flex-col justify-between gap-3">
-          <div class="space-y-2">
-            <div class="flex items-center justify-between text-xs text-teal-700 font-semibold">
-              <span>${escapeHtml(ev.category)}</span>
-              <span>${escapeHtml(ev.city)}</span>
-            </div>
-            <h3 class="font-bold text-stone-900 leading-snug">${escapeHtml(ev.title)}</h3>
-            <p class="text-xs text-stone-600 leading-relaxed">${escapeHtml(ev.description)}</p>
-            <p class="text-xs text-stone-500"><strong>Best for:</strong> ${escapeHtml(ev.ideal_personality)}</p>
-          </div>
-          <div class="space-y-2 pt-2 border-t border-stone-100">
-            <div class="text-xs text-stone-600 flex justify-between gap-2">
-              <span>${escapeHtml(ev.date_text)}</span>
-              <span class="font-medium">${escapeHtml(ev.price)}</span>
-            </div>
-            <div class="flex flex-wrap gap-1">
-              ${(ev.vibe_tags || []).map(t => `<span class="text-[11px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">#${escapeHtml(t)}</span>`).join("")}
-            </div>
-            ${ev.source_url ? `<a href="${escapeHtml(ev.source_url)}" target="_blank" rel="noopener" class="inline-block text-xs text-teal-700 font-medium hover:underline">Source ↗</a>` : ""}
-          </div>
-        </div>
-      `).join("");
-    }
-
-    function escapeHtml(str) {
-      return String(str || "").replace(/[&<>"']/g, m => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-      }[m]));
-    }
-
-    function escapeAttr(str) {
-      return String(str || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-    }
-
-    lucide.createIcons();
-    loadCachedEvents();
-  </script>
-</body>
-</html>
+        <div class="bg-teal-900 text-white rounded-2xl p-5 shado
