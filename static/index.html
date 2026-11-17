@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LaoVibe — AI Laos Event Scraper & Personality Matcher</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background-color: #faf7f2; }
+    .chip-active { background-color: #0f766e; color: white; border-color: #0f766e; }
+  </style>
+</head>
+<body class="text-stone-800 min-h-screen flex flex-col">
+
+  <!-- Top Navbar -->
+  <header class="bg-white border-b border-stone-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-teal-700 text-amber-300 flex items-center justify-center font-bold shadow-sm">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight text-stone-900">LaoVibe AI</h1>
+          <p class="text-xs text-stone-500">Laos Event Scraper & Personality Concierge</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <span id="cacheStatus" class="text-xs bg-stone-100 text-stone-600 px-3 py-1.5 rounded-full border border-stone-200">
+          Loading events...
+        </span>
+
+        <label class="flex items-center gap-1.5 text-xs text-stone-600 cursor-pointer select-none">
+          <input id="includeSearchToggle" type="checkbox" class="rounded text-teal-700 focus:ring-teal-600" />
+          Use Gemini Live Search
+        </label>
+
+        <button id="scrapeBtn" onclick="scrapeEvents()"
+          class="bg-teal-700 hover:bg-teal-800 text-white text-sm font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          <span>Scrape Laos Events</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error / Info Banner -->
+  <div id="alertBanner" class="hidden max-w-7xl mx-auto w-full px-4 mt-4">
+    <div id="alertContent" class="p-3 rounded-xl text-sm border"></div>
+  </div>
+
+  <!-- Main Workspace -->
+  <main class="max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+
+    <!-- Left Sidebar: Personality Profiler -->
+    <aside class="lg:col-span-4 space-y-5">
+      <div class="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-base flex items-center gap-2 text-stone-900">
+            <i data-lucide="user-check" class="w-4 h-4 text-teal-700"></i>
+            Your Personality Profile
+          </h2>
+          <span class="text-[11px] text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full font-medium">Auto-saved</span>
+        </div>
+
+        <!-- Social Energy -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Social Energy</label>
+          <div class="grid grid-cols-3 gap-2" id="energyGroup">
+            <button type="button" onclick="selectSingle('energy', 'Introvert', this)" class="energy-btn border border-stone-200 rounded-xl py-2 text-xs font-medium hover:bg-stone-50">Introvert</button>
+            <button type="button" onclick="selectSingle('energy', 'Ambivert', this)" class="energy-btn chip-active border border-stone-200 rounded-xl py-2 text-xs font-medium">Ambivert</button>
+            <button type="button" onclick="selectSingle('energy', 'Extrovert', this)" class="energy-btn border border-stone-200 rounded-xl py-2 text-xs font-medium hover:bg-stone-50">Extrovert</button>
+          </div>
+        </div>
+
+        <!-- Pace -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Ideal Event Pace</label>
+          <div class="grid grid-cols-3 gap-2" id="paceGroup">
+            <button type="button" onclick="selectSingle('pace', 'Slow & Mindful', this)" class="pace-btn border border-stone-200 rounded-xl py-2 text-xs font-medium hover:bg-stone-50">Slow & Mindful</button>
+            <button type="button" onclick="selectSingle('pace', 'Balanced', this)" class="pace-btn chip-active border border-stone-200 rounded-xl py-2 text-xs font-medium">Balanced</button>
+            <button type="button" onclick="selectSingle('pace', 'High Energy', this)" class="pace-btn border border-stone-200 rounded-xl py-2 text-xs font-medium hover:bg-stone-50">High Energy</button>
+          </div>
+        </div>
+
+        <!-- City & Budget -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">City in Laos</label>
+            <select id="citySelect" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-teal-600">
+              <option>Anywhere in Laos</option>
+              <option>Vientiane</option>
+              <option>Luang Prabang</option>
+              <option>Vang Vieng</option>
+              <option>Pakse</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Budget</label>
+            <select id="budgetSelect" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-teal-600">
+              <option>Any</option>
+              <option>Free / Budget</option>
+              <option>Moderate</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Interests -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Interests & Vibes</label>
+          <div class="flex flex-wrap gap-1.5" id="interestChips">
+            <button type="button" onclick="toggleInterest(this)" class="interest-btn chip-active border border-stone-200 rounded-full px-3 py-1 text-xs">Arts & Culture</button>
+            <button type="button" onclick="toggleInterest(this)" class="interest-btn chip-active border border-stone-200 rounded-full px-3 py-1 text-xs">Food & Coffee</button>
+            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Live Music</button>
+            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Markets & Crafts</button>
+            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Nature & Wellness</button>
+            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Tech & Networking</button>
+            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Festivals & Temples</button>
+            <button type="button" onclick="toggleInterest(this)" class="interest-btn border border-stone-200 rounded-full px-3 py-1 text-xs">Nightlife & Social</button>
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">About You / Current Mood</label>
+          <textarea id="bioInput" rows="3"
+            placeholder="e.g., I'm a solo traveler who loves quiet heritage spaces, acoustic music, and local markets—not loud clubs."
+            class="w-full border border-stone-200 rounded-xl p-3 text-sm focus:outline-teal-600"></textarea>
+        </div>
+
+        <!-- Custom Scrape URL -->
+        <div class="pt-3 border-t border-stone-100">
+          <label class="block text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Add Custom Laos Event URL (Optional)</label>
+          <input id="customUrlInput" type="url" placeholder="https://example.com/laos-events"
+            class="w-full border border-stone-200 rounded-xl px-3 py-2 text-xs focus:outline-teal-600" />
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Main Panel -->
+    <section class="lg:col-span-8 flex flex-col gap-5">
+
+      <!-- Tabs -->
+      <div class="flex gap-2 bg-white p-1.5 rounded-2xl border border-stone-200 w-fit">
+        <button id="tabConcierge" onclick="switchTab('concierge')"
+          class="px-4 py-2 rounded-xl text-sm font-semibold bg-teal-700 text-white transition">
+          AI Personality Matcher
+        </button>
+        <button id="tabExplore" onclick="switchTab('explore')"
+          class="px-4 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-100 transition">
+          All Scraped Events (<span id="eventCountTab">0</span>)
+        </button>
+      </div>
+
+      <!-- TAB 1: AI Concierge -->
+      <div id="panelConcierge" class="space-y-5">
+        <div class="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm space-y-4">
+          <h2 class="font-bold text-base text-stone-900">Ask about events in Laos</h2>
+
+          <!-- Quick Prompts -->
+          <div class="flex flex-wrap gap-2">
+            <button onclick="askPreset('What events this week match my personality best?')"
+              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition">
+              What fits my vibe this week?
+            </button>
+            <button onclick="askPreset('Any calm cultural or creative workshops in Laos?')"
+              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition">
+              Calm cultural & creative events
+            </button>
+            <button onclick="askPreset('Where can I meet friendly people or enjoy live music?')"
+              class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 px-3 py-1.5 rounded-full transition">
+              Social & live music spots
+            </button>
+          </div>
+
+          <!-- Input Form -->
+          <form onsubmit="handleAsk(event)" class="flex flex-col sm:flex-row gap-2.5">
+            <input id="queryInput" type="text" required
+              placeholder="Ask anything... e.g. 'Any weekend art, food, or music events in Vientiane?'"
+              class="flex-1 border border-stone-300 rounded-xl px-4 py-2.5 text-sm focus:outline-teal-600" />
+            <button id="askBtn" type="submit"
+              class="bg-stone-900 hover:bg-stone-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>Match Me</span>
+            </button>
+          </form>
+
+          <label class="flex items-center gap-2 text-xs text-stone-500 cursor-pointer">
+            <input id="liveQuerySearch" type="checkbox" class="rounded text-teal-700" />
+            Also run a fresh Gemini Google Search for this specific question
+          </label>
+        </div>
+
+        <!-- Recommendation Output -->
+        <div id="recommendResults" class="space-y-4"></div>
+      </div>
+
+      <!-- TAB 2: Scraped Event Explorer -->
+      <div id="panelExplore" class="hidden space-y-4">
+        <div class="bg-white rounded-2xl border border-stone-200 p-4 flex flex-wrap gap-3 items-center justify-between">
+          <input id="exploreFilterInput" oninput="renderAllEvents()" type="text" placeholder="Filter by title, city, or vibe..."
+            class="border border-stone-200 rounded-xl px-3.5 py-2 text-sm flex-1 min-w-[200px] focus:outline-teal-600" />
+          <select id="exploreCityFilter" onchange="renderAllEvents()" class="border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white">
+            <option value="">All Cities</option>
+            <option value="Vientiane">Vientiane</option>
+            <option value="Luang Prabang">Luang Prabang</option>
+            <option value="Vang Vieng">Vang Vieng</option>
+            <option value="Pakse">Pakse</option>
+          </select>
+        </div>
+        <div id="allEventsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    let state = {
+      energy: "Ambivert",
+      pace: "Balanced",
+      interests: ["Arts & Culture", "Food & Coffee"],
+      events: [],
+    };
+
+    function showAlert(msg, type = "info") {
+      const banner = document.getElementById("alertBanner");
+      const content = document.getElementById("alertContent");
+      banner.classList.remove("hidden");
+      content.className = type === "error"
+        ? "p-3 rounded-xl text-sm border bg-red-50 border-red-200 text-red-800"
+        : "p-3 rounded-xl text-sm border bg-teal-50 border-teal-200 text-teal-900";
+      content.textContent = msg;
+    }
+
+    function hideAlert() {
+      document.getElementById("alertBanner").classList.add("hidden");
+    }
+
+    function selectSingle(group, value, btn) {
+      state[group] = value;
+      document.querySelectorAll(`.${group}-btn`).forEach(b => b.classList.remove("chip-active"));
+      btn.classList.add("chip-active");
+    }
+
+    function toggleInterest(btn) {
+      const val = btn.textContent.trim();
+      btn.classList.toggle("chip-active");
+      if (state.interests.includes(val)) {
+        state.interests = state.interests.filter(i => i !== val);
+      } else {
+        state.interests.push(val);
+      }
+    }
+
+    function getPersonalityPayload() {
+      return {
+        social_energy: state.energy,
+        pace: state.pace,
+        interests: state.interests,
+        budget: document.getElementById("budgetSelect").value,
+        preferred_city: document.getElementById("citySelect").value,
+        bio: document.getElementById("bioInput").value.trim(),
+      };
+    }
+
+    function switchTab(tab) {
+      const isConcierge = tab === "concierge";
+      document.getElementById("panelConcierge").classList.toggle("hidden", !isConcierge);
+      document.getElementById("panelExplore").classList.toggle("hidden", isConcierge);
+
+      document.getElementById("tabConcierge").className = isConcierge
+        ? "px-4 py-2 rounded-xl text-sm font-semibold bg-teal-700 text-white transition"
+        : "px-4 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-100 transition";
+      document.getElementById("tabExplore").className = !isConcierge
+        ? "px-4 py-2 rounded-xl text-sm font-semibold bg-teal-700 text-white transition"
+        : "px-4 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-100 transition";
+    }
+
+    async function loadCachedEvents() {
+      try {
+        const res = await fetch("/api/events");
+        const data = await res.json();
+        updateEventUI(data);
+      } catch (e) {
+        document.getElementById("cacheStatus").textContent = "Failed to load cache";
+      }
+    }
+
+    function updateEventUI(data) {
+      state.events = data.events || [];
+      document.getElementById("eventCountTab").textContent = state.events.length;
+      const statusEl = document.getElementById("cacheStatus");
+      if (state.events.length === 0) {
+        statusEl.textContent = "0 events cached — click Scrape!";
+      } else {
+        statusEl.textContent = `${state.events.length} events • Updated ${data.updated_at || "recently"}`;
+      }
+      renderAllEvents();
+    }
+
+    async function scrapeEvents() {
+      hideAlert();
+      const btn = document.getElementById("scrapeBtn");
+      const original = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span><span>Scraping events...</span>`;
+
+      const customUrl = document.getElementById("customUrlInput").value.trim();
+      const useSearch = document.getElementById("includeSearchToggle").checked;
+      const cityFocus = document.getElementById("citySelect").value;
+
+      try {
+        const res = await fetch("/api/scrape", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            custom_urls: customUrl ? [customUrl] : [],
+            use_google_search: useSearch,
+            city_focus: cityFocus === "Anywhere in Laos" ? "All of Laos" : cityFocus,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Scraping failed");
+        updateEventUI(data);
+        showAlert(`Scraped and structured ${data.events.length} Laos events! Ask the AI Concierge for your best matches.`);
+      } catch (err) {
+        showAlert(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+        lucide.createIcons();
+      }
+    }
+
+    function askPreset(text) {
+      document.getElementById("queryInput").value = text;
+      handleAsk(new Event("submit"));
+    }
+
+    async function handleAsk(e) {
+      e.preventDefault();
+      hideAlert();
+      const query = document.getElementById("queryInput").value.trim();
+      if (!query) return;
+
+      const btn = document.getElementById("askBtn");
+      const out = document.getElementById("recommendResults");
+      btn.disabled = true;
+      out.innerHTML = `
+        <div class="bg-white rounded-2xl border border-stone-200 p-8 text-center text-stone-500 text-sm">
+          AI is analyzing your personality and matching Laos events...
+        </div>`;
+
+      try {
+        const res = await fetch("/api/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query,
+            personality: getPersonalityPayload(),
+            use_live_search: document.getElementById("liveQuerySearch").checked,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Recommendation failed");
+
+        renderRecommendations(data);
+        loadCachedEvents();
+      } catch (err) {
+        out.innerHTML = "";
+        showAlert(err.message, "error");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderRecommendations(data) {
+      const out = document.getElementById("recommendResults");
+      const cardsHtml = (data.recommendations || []).map(item => `
+        <div class="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm hover:border-teal-300 transition space-y-3">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wide text-teal-700">${escapeHtml(item.category)} • ${escapeHtml(item.city)}</span>
+              <h3 class="font-bold text-lg text-stone-900 mt-0.5">${escapeHtml(item.event_title)}</h3>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+              ${item.match_score}% Personality Match
+            </span>
+          </div>
+
+          <div class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 text-sm text-stone-700">
+            <strong class="text-amber-900">Why it fits you:</strong> ${escapeHtml(item.why_it_matches)}
+          </div>
+
+          <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-stone-600">
+            <span><strong>When:</strong> ${escapeHtml(item.date_text)}</span>
+            <span><strong>Where:</strong> ${escapeHtml(item.venue)}</span>
+            <span><strong>Price:</strong> ${escapeHtml(item.price)}</span>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div class="flex flex-wrap gap-1.5">
+              ${(item.vibe_tags || []).map(t => `<span class="text-[11px] bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-full">#${escapeHtml(t)}</span>`).join("")}
+            </div>
+            ${item.source_url ? `<a href="${escapeHtml(item.source_url)}" target="_blank" rel="noopener" class="text-xs font-semibold text-teal-700 hover:underline">View Source ↗</a>` : ""}
+          </div>
+        </div>
+      `).join("");
+
+      const followupsHtml = (data.suggested_followups || []).map(q => `
+        <button onclick="askPreset('${escapeAttr(q)}')" class="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-full transition">
+          ${escapeHtml(q)}
+        </button>
+      `).join("");
+
+      out.innerHTML = `
+        <div class="bg-teal-900 text-white rounded-2xl p-5 shadow-sm">
+          <p class="text-sm leading-relaxed">${escapeHtml(data.assistant_message)}</p>
+        </div>
+        ${cardsHtml}
+        ${followupsHtml ? `<div class="flex flex-wrap gap-2 pt-1">${followupsHtml}</div>` : ""}
+      `;
+    }
+
+    function renderAllEvents() {
+      const grid = document.getElementById("allEventsGrid");
+      const textFilter = (document.getElementById("exploreFilterInput").value || "").toLowerCase();
+      const cityFilter = (document.getElementById("exploreCityFilter").value || "").toLowerCase();
+
+      const filtered = state.events.filter(ev => {
+        const hay = `${ev.title} ${ev.city} ${ev.category} ${ev.description} ${(ev.vibe_tags || []).join(" ")}`.toLowerCase();
+        const matchesText = !textFilter || hay.includes(textFilter);
+        const matchesCity = !cityFilter || (ev.city || "").toLowerCase().includes(cityFilter);
+        return matchesText && matchesCity;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full bg-white rounded-2xl border border-stone-200 p-8 text-center text-sm text-stone-500">No events match your filter. Try clicking "Scrape Laos Events" at the top.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(ev => `
+        <div class="bg-white rounded-2xl border border-stone-200 p-4 shadow-sm flex flex-col justify-between gap-3">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs text-teal-700 font-semibold">
+              <span>${escapeHtml(ev.category)}</span>
+              <span>${escapeHtml(ev.city)}</span>
+            </div>
+            <h3 class="font-bold text-stone-900 leading-snug">${escapeHtml(ev.title)}</h3>
+            <p class="text-xs text-stone-600 leading-relaxed">${escapeHtml(ev.description)}</p>
+            <p class="text-xs text-stone-500"><strong>Best for:</strong> ${escapeHtml(ev.ideal_personality)}</p>
+          </div>
+          <div class="space-y-2 pt-2 border-t border-stone-100">
+            <div class="text-xs text-stone-600 flex justify-between gap-2">
+              <span>${escapeHtml(ev.date_text)}</span>
+              <span class="font-medium">${escapeHtml(ev.price)}</span>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              ${(ev.vibe_tags || []).map(t => `<span class="text-[11px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">#${escapeHtml(t)}</span>`).join("")}
+            </div>
+            ${ev.source_url ? `<a href="${escapeHtml(ev.source_url)}" target="_blank" rel="noopener" class="inline-block text-xs text-teal-700 font-medium hover:underline">Source ↗</a>` : ""}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str || "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    function escapeAttr(str) {
+      return String(str || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    }
+
+    lucide.createIcons();
+    loadCachedEvents();
+  </script>
+</body>
+</html>
